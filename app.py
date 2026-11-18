@@ -13,6 +13,9 @@ st.set_page_config(
     layout="centered"
 )
 
+if "prediction_history" not in st.session_state:
+    st.session_state.prediction_history = []
+
 # Class names
 CLASS_NAMES = [
     "crazing",
@@ -103,3 +106,22 @@ if uploaded_file is not None:
 
         st.success(f"Predicted Defect: {label}")
         st.metric("Model Confidence", f"{score:.2f}%")
+        
+        st.session_state.prediction_history.append({
+          "Prediction": label,
+          "Confidence": f"{score:.2f}%"
+          })
+        st.subheader("Class Probabilities")
+
+        for class_name, probability in zip(
+          CLASS_NAMES,
+          probabilities[0].tolist()
+          ):
+          st.write(f"{class_name}: {probability * 100:.2f}%")
+          st.progress(probability)
+        if st.session_state.prediction_history:
+          st.subheader("Prediction History")
+          st.dataframe(
+          st.session_state.prediction_history,
+          use_container_width=True
+          )  
