@@ -106,6 +106,14 @@ if uploaded_file is not None:
 
         st.success(f"Predicted Defect: {label}")
         st.metric("Model Confidence", f"{score:.2f}%")
+
+        if score < 70:
+          st.warning(
+             "Low confidence prediction. "
+             "Please inspect the image or seek manual verification."
+          )
+        else:
+          st.info("The model is reasonably confident in this prediction.")
         
         st.session_state.prediction_history.append({
           "Prediction": label,

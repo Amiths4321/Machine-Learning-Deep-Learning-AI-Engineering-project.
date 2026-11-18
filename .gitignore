@@ -10,13 +10,23 @@ models/*.joblib
 data/raw/
 data/processed/
 .ipynb_checkpoints/
+*.py[cod]
+*.egg-info/
 "@ | Out-File -Encoding utf8 .gitignore
 
 # 2. Reset staging to clear out any bad tracking
 git rm -rf --cached .
 
+# Temporary and system files
+.DS_Store
+Thumbs.db
+*.log
+
 # 3. Add only your actual project files (Git will now respect .gitignore)
 git add .
+
+# Local environment and secrets
+.env
 
 # 4. Commit your clean project state
 git commit -m "feat: initial commit for deep learning portfolio project"
