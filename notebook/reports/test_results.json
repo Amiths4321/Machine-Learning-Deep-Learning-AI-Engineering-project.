@@ -1,0 +1,12 @@
+{
+    "test_accuracy": 0.12962962962962962,
+    "test_images": 216,
+    "classes": [
+        "crazing",
+        "inclusion",
+        "patches",
+        "pitted_surface",
+        "rolled-in_scale",
+        "scratches"
+    ]
+}

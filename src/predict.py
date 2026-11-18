@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 
@@ -5,49 +6,41 @@ from torchvision import models, transforms
 from PIL import Image
 
 
-CLASS_NAMES = [
-    "Crazing",
-    "Inclusion",
-    "Patches",
-    "Pitted_Surface",
-    "Rolled-in_Scale",
-    "Scratches"
-]
-
-
 class SteelDefectPredictor:
 
-    def __init__(self, model_path):
+    def __init__(self, model_path="models/best_resnet18.pth"):
 
         self.device = torch.device("cpu")
+
+        self.class_names = [
+            "crazing",
+            "inclusion",
+            "patches",
+            "pitted_surface",
+            "rolled-in_scale",
+            "scratches"
+        ]
 
         self.model = models.resnet18(weights=None)
 
         self.model.fc = nn.Linear(
             self.model.fc.in_features,
-            6
+            len(self.class_names)
         )
 
-        self.model.load_state_dict(
-            torch.load(
-                model_path,
-                map_location=self.device
-            )
+        checkpoint = torch.load(
+            model_path,
+            map_location=self.device,
+            weights_only=True
         )
 
+        self.model.load_state_dict(checkpoint)
         self.model.to(self.device)
         self.model.eval()
 
         self.transform = transforms.Compose([
-
-            transforms.Grayscale(num_output_channels=3),
-
-            transforms.Resize(256),
-
-            transforms.CenterCrop(224),
-
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225]
@@ -59,9 +52,7 @@ class SteelDefectPredictor:
         image = Image.open(image_path).convert("RGB")
 
         image_tensor = self.transform(image)
-
         image_tensor = image_tensor.unsqueeze(0)
-
         image_tensor = image_tensor.to(self.device)
 
         with torch.no_grad():
@@ -69,21 +60,18 @@ class SteelDefectPredictor:
             outputs = self.model(image_tensor)
 
             probabilities = torch.softmax(
-                outputs,
-                dim=1
+                outputs, dim=1
+            )[0]
+
+            confidence, predicted_idx = torch.max(
+                probabilities, dim=0
             )
 
-        predicted_index = probabilities.argmax(
-            dim=1
-        ).item()
-
-        confidence = probabilities[0, predicted_index].item()
-
         return {
-            "predicted_class": CLASS_NAMES[predicted_index],
-            "confidence": confidence,
+            "predicted_class": self.class_names[predicted_idx.item()],
+            "confidence": confidence.item(),
             "probabilities": {
-                CLASS_NAMES[i]: probabilities[0, i].item()
-                for i in range(len(CLASS_NAMES))
+                name: probabilities[i].item()
+                for i, name in enumerate(self.class_names)
             }
         }
