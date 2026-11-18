@@ -1,0 +1,25 @@
+# 1. Create a clean .gitignore file in the project root
+@"
+.venv/
+.agents/
+.claude/
+__pycache__/
+.pytest_cache/
+models/*.pth
+models/*.joblib
+data/raw/
+data/processed/
+.ipynb_checkpoints/
+"@ | Out-File -Encoding utf8 .gitignore
+
+# 2. Reset staging to clear out any bad tracking
+git rm -rf --cached .
+
+# 3. Add only your actual project files (Git will now respect .gitignore)
+git add .
+
+# 4. Commit your clean project state
+git commit -m "feat: initial commit for deep learning portfolio project"
+
+# 5. Push to GitHub (forcing upstream branch tracking)
+git push -u origin main
